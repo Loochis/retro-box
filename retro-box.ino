@@ -40,11 +40,10 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 #define DEG90RAD 1.5708
 
+
 // ---- BITMAPS ---- //
 
-// FONTS
-// small digits
-
+// FONT
 static const unsigned char digits_small[10][3] = {
   { 0b11110110, 0b11011110 }, // 0
   { 0b11001001, 0b00101110 }, // 1
@@ -60,30 +59,75 @@ static const unsigned char digits_small[10][3] = {
 
 // THUMBNAILS
 static const unsigned char snake_thumb[] = {
-  0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00001111, 0b01000000, 0b00010011, 0b11110011, 0b00110011, 0b11110000,
-  0b00001111, 0b11000110, 0b00010011, 0b11110011, 0b00110011, 0b11110000, 0b00001100, 0b00001111, 0b00110011, 0b00110011, 0b01100011, 0b00000000,
-  0b00001100, 0b00001111, 0b00110010, 0b00000000, 0b00000000, 0b00000000, 0b00001111, 0b11001101, 0b10110000, 0b11111111, 0b11111111, 0b01000000,
-  0b00001111, 0b11001101, 0b10110011, 0b11111111, 0b11111111, 0b11000000, 0b00000000, 0b11001100, 0b11110000, 0b00000000, 0b00000000, 0b00000000,
-  0b00000000, 0b11001100, 0b11110011, 0b00110011, 0b01100011, 0b00000000, 0b00000011, 0b11000100, 0b01100011, 0b00110011, 0b00110011, 0b11110000,
-  0b00001111, 0b11001100, 0b00000011, 0b00110011, 0b00110011, 0b11110000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-  0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00010000, 0b00000000,
-  0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b10000000, 0b00000010, 0b00000000, 0b00000000, 0b00000000,
+  0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00011111, 0b00100000, 0b00000100, 0b11111111, 0b10011100,
+  0b01110011, 0b11111110, 0b00111111, 0b00100011, 0b10000100, 0b11111111, 0b10011100, 0b01110011, 0b11111110, 0b00111111, 0b11100011, 0b11000100,
+  0b11111111, 0b10011100, 0b01110011, 0b11111110, 0b00111000, 0b00000111, 0b11001100, 0b11100011, 0b10011100, 0b11100011, 0b10000000, 0b00111000,
+  0b00000111, 0b11001100, 0b11100011, 0b10011101, 0b11000011, 0b10000000, 0b00111000, 0b00000111, 0b11101100, 0b11100000, 0b00000000, 0b00000000,
+  0b00000000, 0b00111111, 0b11000110, 0b11101100, 0b11000011, 0b11111111, 0b11111111, 0b10010000, 0b00111111, 0b11100110, 0b11101100, 0b00011111,
+  0b11111111, 0b11111111, 0b10010000, 0b00011111, 0b11100110, 0b11101100, 0b11111111, 0b11111111, 0b11111111, 0b11110000, 0b00000000, 0b11100110,
+  0b11111100, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b11100111, 0b01111100, 0b11100011, 0b10011101, 0b11000011, 0b10000000,
+  0b00000000, 0b11100111, 0b01111100, 0b11100011, 0b10011100, 0b11100011, 0b10000000, 0b00000000, 0b11100001, 0b01111000, 0b11100011, 0b10011100,
+  0b01110011, 0b11111110, 0b00000111, 0b11100001, 0b00111000, 0b11100011, 0b10011100, 0b01110011, 0b11111110, 0b00111111, 0b11000111, 0b00000000,
+  0b11100011, 0b10011100, 0b01110011, 0b11111110, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
   0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-  0b00000000, 0b00000000, 0b01000000, 0b00000001, 0b11110000, 0b00000000, 0b00000000, 0b00000000, 0b00000111, 0b10011111, 0b11111111, 0b00000000,
-  0b00000000, 0b00100000, 0b00001100, 0b01111111, 0b11111111, 0b10000000, 0b00000100, 0b00000001, 0b01001100, 0b01111110, 0b00000000, 0b11000000,
-  0b00000001, 0b00001000, 0b00011100, 0b01110000, 0b00000000, 0b01000000, 0b00000010, 0b00100001, 0b00111111, 0b11100111, 0b00000001, 0b00000000,
-  0b00010101, 0b01111100, 0b01111111, 0b11000011, 0b00000000, 0b11000000, 0b00000111, 0b00000001, 0b11111111, 0b00000011, 0b00000000, 0b11000000,
-  0b00010000, 0b01111111, 0b10111110, 0b00000010, 0b00000000, 0b10000000, 0b00000111, 0b11110111, 0b01111000, 0b10000100, 0b00000001, 0b00000000,
-  0b00011111, 0b10101010, 0b11110001, 0b00000000, 0b00000000, 0b00000000, 0b00001111, 0b11011101, 0b11000001, 0b00000000, 0b00000000, 0b00000000,
-  0b00010110, 0b10111010, 0b11100010, 0b00000000, 0b00000000, 0b00000000, 0b00011011, 0b01110111, 0b01111001, 0b00000000, 0b00010000, 0b00000000,
-  0b00011101, 0b10111010, 0b10111100, 0b10000000, 0b00000000, 0b00000000, 0b00001110, 0b11011101, 0b11011110, 0b10000000, 0b00100000, 0b00000000,
-  0b00010101, 0b11111010, 0b11111110, 0b00000000, 0b00100000, 0b00000000, 0b00011011, 0b01110111, 0b01110111, 0b00000000, 0b00000000, 0b00000000,
-  0b00010100, 0b10111111, 0b11111011, 0b00000000, 0b00000000, 0b00000000, 0b00001101, 0b01011100, 0b00001111, 0b10000000, 0b00010000, 0b00000000,
-  0b00011011, 0b11100000, 0b11100001, 0b11000000, 0b00000000, 0b00010000, 0b00011111, 0b00001110, 0b10100000, 0b11110000, 0b00001000, 0b00000000,
-  0b00011100, 0b00110101, 0b01000000, 0b01111100, 0b00000100, 0b00000000, 0b00010000, 0b11001010, 0b00000000, 0b00001111, 0b11111000, 0b00000000,
-  0b00000110, 0b00000100, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00010100, 0b01000000, 0b00100001, 0b00000000, 0b00000000, 0b00000000,
-  0b00001010, 0b00010010, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000100, 0b00000000, 0b00000000, 0b00000000, 0b00001000, 0b00000000,
-  0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000
+  0b00000000, 0b00000000, 0b00001000, 0b00000000, 0b00100000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
+  0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00100000, 0b00000000,
+  0b00000100, 0b00000000, 0b00011111, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b01111001, 0b11111111, 0b11110000, 0b00000000,
+  0b00000000, 0b00000010, 0b00000000, 0b11000111, 0b11111111, 0b11111000, 0b00000000, 0b00000000, 0b01000000, 0b00010100, 0b11000111, 0b11100000,
+  0b00001100, 0b00000000, 0b00000100, 0b00010000, 0b10000001, 0b11000111, 0b00000000, 0b00000100, 0b00000000, 0b00100000, 0b00100010, 0b00010011,
+  0b11111110, 0b01110000, 0b00010000, 0b00000000, 0b00000001, 0b01010111, 0b11000111, 0b11111100, 0b00110000, 0b00001100, 0b00000000, 0b00010000,
+  0b01110000, 0b00011111, 0b11110000, 0b00110000, 0b00001100, 0b00000000, 0b00101011, 0b00000111, 0b11111011, 0b11100000, 0b00100000, 0b00001000,
+  0b00000000, 0b00011000, 0b01111111, 0b01110111, 0b10001000, 0b01000000, 0b00010000, 0b00000000, 0b00100011, 0b11111010, 0b10101111, 0b00010000,
+  0b00000000, 0b00000000, 0b00000000, 0b00001110, 0b11111101, 0b11011100, 0b00010000, 0b00000000, 0b00000000, 0b10000000, 0b00111011, 0b01101011,
+  0b10101110, 0b00100000, 0b00000000, 0b00000001, 0b00000000, 0b01010111, 0b10110111, 0b01110111, 0b10010000, 0b00000001, 0b00000111, 0b11000000,
+  0b00101111, 0b11011011, 0b10101011, 0b11001000, 0b00000000, 0b00001001, 0b01100000, 0b01011110, 0b11101101, 0b11011101, 0b11101000, 0b00000010,
+  0b00001011, 0b11100000, 0b00111011, 0b01011111, 0b10101111, 0b11100000, 0b00000010, 0b00001111, 0b11100000, 0b01010111, 0b10110111, 0b01110111,
+  0b01110000, 0b00000000, 0b00001111, 0b11100000, 0b00101111, 0b01001011, 0b11111111, 0b10110000, 0b00000000, 0b00001111, 0b11100000, 0b01010110,
+  0b11010101, 0b11000000, 0b11111000, 0b00000001, 0b00000111, 0b11000000, 0b00111001, 0b10111110, 0b00001110, 0b00011100, 0b00000000, 0b00000000,
+  0b00000000, 0b01010101, 0b11110000, 0b11101010, 0b00001111, 0b00000000, 0b10000000, 0b00000000, 0b00101111, 0b11000011, 0b01010100, 0b00000111,
+  0b11000000, 0b01000000, 0b00000000, 0b01010111, 0b00001100, 0b10100000, 0b00000000, 0b11111111, 0b10000000, 0b00000000, 0b00111000, 0b01100000,
+  0b01000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b01000011, 0b01000100, 0b00000010, 0b00010000, 0b00000000, 0b00000000, 0b00000000,
+  0b00001100, 0b10100001, 0b00100000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00110100, 0b01000000, 0b00000000, 0b00000000, 0b00000000,
+  0b10000000, 0b00000000, 0b00001010, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
+  0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b10000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00010000,
+  0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
+  0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000
+};
+
+static const unsigned char asteroids_thumb[] = {
+  0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000100, 0b01101111, 0b11001111, 0b00111000, 0b00111001,
+  0b11110111, 0b00001110, 0b00001101, 0b11000001, 0b00010000, 0b01000100, 0b01000100, 0b01000100, 0b10111000, 0b00001101, 0b00000001, 0b00010000,
+  0b01000100, 0b01000100, 0b01000100, 0b10100001, 0b00010101, 0b11100010, 0b00111100, 0b11111000, 0b10001000, 0b10001000, 0b10111100, 0b00111100,
+  0b00100100, 0b01000001, 0b00010001, 0b00010001, 0b00010001, 0b00000101, 0b00100100, 0b11100100, 0b01000001, 0b00001001, 0b00010001, 0b00010010,
+  0b01111100, 0b01000101, 0b10001000, 0b11111010, 0b00010000, 0b11100111, 0b11011100, 0b11000001, 0b00000000, 0b00000000, 0b00000000, 0b00000010,
+  0b00000000, 0b00000000, 0b00001010, 0b00000000, 0b00000101, 0b01010000, 0b01010101, 0b01010101, 0b01010101, 0b01010101, 0b01100000, 0b00000000,
+  0b10101010, 0b00101010, 0b10101011, 0b10101110, 0b11101111, 0b00111100, 0b00111110, 0b01111111, 0b11001111, 0b11111110, 0b11111111, 0b11111000,
+  0b00000000, 0b00000111, 0b00101110, 0b11110011, 0b01011111, 0b11101111, 0b00000111, 0b00000000, 0b00000001, 0b10011111, 0b11111100, 0b11111111,
+  0b11111100, 0b01111111, 0b00000000, 0b00000000, 0b01000111, 0b11111110, 0b00000000, 0b11000011, 0b11111111, 0b00000000, 0b00000000, 0b00010011,
+  0b11111110, 0b10001110, 0b00001111, 0b11111111, 0b00111111, 0b00000000, 0b00000001, 0b11111110, 0b10000000, 0b01101111, 0b11111111, 0b00011111,
+  0b11111110, 0b00000001, 0b11111110, 0b11000011, 0b01101111, 0b11111111, 0b00011111, 0b11111111, 0b11111101, 0b11111110, 0b00001001, 0b01101111,
+  0b11111111, 0b00000011, 0b11111111, 0b11110001, 0b11111000, 0b00011001, 0b01101111, 0b11111111, 0b00000000, 0b01111111, 0b10000111, 0b11100011,
+  0b00110001, 0b01101111, 0b11111111, 0b00000000, 0b00111100, 0b00011111, 0b10001110, 0b00100000, 0b01101111, 0b11111111, 0b00000000, 0b00000000,
+  0b00111111, 0b11111110, 0b01100000, 0b11001111, 0b11111111, 0b00000000, 0b00000000, 0b00011111, 0b11111100, 0b11000001, 0b11011111, 0b11111111,
+  0b00000000, 0b00000001, 0b00011111, 0b11111001, 0b10000000, 0b10011111, 0b11111111, 0b00000000, 0b00000110, 0b00001111, 0b11110011, 0b00010010,
+  0b10001111, 0b11111111, 0b00000000, 0b00011100, 0b00001110, 0b11100011, 0b00010010, 0b00100111, 0b11111111, 0b00000000, 0b00000000, 0b00000110,
+  0b10000110, 0b00110010, 0b01110111, 0b11111111, 0b00000000, 0b00000000, 0b00000110, 0b10001100, 0b00111001, 0b01110111, 0b11111111, 0b00000000,
+  0b00000000, 0b00010010, 0b00011000, 0b01111001, 0b01100111, 0b11111111, 0b00000000, 0b00000000, 0b00011001, 0b00111000, 0b11111101, 0b00101111,
+  0b11111111, 0b00000000, 0b00000000, 0b00001101, 0b00110000, 0b11111100, 0b10001111, 0b11111111, 0b00000000, 0b00000000, 0b00000111, 0b01100001,
+  0b11111100, 0b10011111, 0b11111111, 0b00000000, 0b00000000, 0b00000001, 0b11100001, 0b11111110, 0b00011111, 0b11111111, 0b00000000, 0b00000000,
+  0b00000111, 0b11000011, 0b11111111, 0b01011111, 0b11111111, 0b00000000, 0b00000011, 0b11111111, 0b11111100, 0b01111111, 0b00001111, 0b11111111,
+  0b00000011, 0b11111111, 0b11111110, 0b10110011, 0b11111111, 0b00000111, 0b11111111, 0b11111111, 0b11111111, 0b11111101, 0b10010011, 0b11111111,
+  0b10000111, 0b11111111, 0b11111111, 0b11111111, 0b11111011, 0b00001011, 0b11111111, 0b10000011, 0b11111111, 0b11111111, 0b11111111, 0b11110101,
+  0b00000001, 0b11111111, 0b11000011, 0b11111111, 0b11111111, 0b11111111, 0b11101011, 0b00000001, 0b11111111, 0b11000001, 0b11111111, 0b11111111,
+  0b11111111, 0b11010101, 0b00000000, 0b11111111, 0b11100001, 0b11111111, 0b11111111, 0b11111111, 0b10101011, 0b00000000, 0b01111111, 0b11100001,
+  0b11111111, 0b11111111, 0b11111111, 0b01010101, 0b00000000, 0b00111111, 0b11110000, 0b11111111, 0b11111111, 0b11111110, 0b10101011, 0b00000000,
+  0b00011111, 0b11110000, 0b11111111, 0b11111111, 0b11111101, 0b01010110, 0b00000000, 0b00000011, 0b11111000, 0b11111111, 0b11111111, 0b11111010,
+  0b10101010, 0b00000000, 0b00000000, 0b01111000, 0b00011111, 0b11111111, 0b11110101, 0b01010110, 0b00000000, 0b00000000, 0b00001000, 0b00000000,
+  0b11111111, 0b11101010, 0b10101010, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b11111111, 0b11010101, 0b01010110, 0b00000000, 0b00000000,
+  0b00000000, 0b00100000, 0b11111111, 0b10101010, 0b10101010, 0b00000000, 0b00000001, 0b00000000, 0b00110000, 0b00000111, 0b01010101, 0b01010110,
+  0b00000000, 0b00000011, 0b00000000, 0b00011000, 0b11110001, 0b10101010, 0b10101010, 0b00000000, 0b00000011, 0b00000000, 0b00000000, 0b00000001,
+  0b01010101, 0b01010100, 0b00000000, 0b00000011, 0b00000100, 0b00000000, 0b11111100, 0b10101010, 0b10101100, 0b00000000, 0b00000011, 0b00000110,
+  0b00000000, 0b00000000, 0b11010101, 0b01010100, 0b00000000, 0b00000000, 0b00000010, 0b00000000
 };
 
 // GAME ASSETS
@@ -117,6 +161,13 @@ static const unsigned char snake_scoreboard[] = {
   0b00000000, 0b00000010, 0b10100000, 0b10010010, 0b11101110, 0b11101010, 0b11100000, 0b00000000, 0b00000011, 0b10111011, 0b10010000
 };
 
+// --- GAME LIST --- //
+
+static const unsigned char* game_thumbs[] = {
+  snake_thumb,
+  asteroids_thumb
+};
+
 // ---- START CODE ---- //
 
 void setup() {
@@ -130,11 +181,17 @@ void setup() {
   pinMode(INPUT_L, INPUT_PULLUP);
   pinMode(INPUT_R, INPUT_PULLUP);
 
+  // Set the I2C bus to fast mode
+  Wire.setClock(400000);
+
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
   }
+
+  // Set the I2C bus to fast mode
+  Wire.setClock(400000);
 
   // Clear the buffer
   display.clearDisplay();
@@ -197,6 +254,14 @@ struct world_coord collateVertData(float *vert_arr, char *ind_arr, int index) {
   return retCoord;
 }
 
+struct world_coord collateVertData(float *vert_arr, int index) {
+  world_coord retCoord;
+  retCoord.x = vert_arr[index*3 + 0];
+  retCoord.y = vert_arr[index*3 + 1];
+  retCoord.z = vert_arr[index*3 + 2];
+  return retCoord;
+}
+
 void draw_digit(int digit, int x_pos, int y_pos, int scale) {
   int ctr = 0;
   for (int y = 0; y < 5; y++) {
@@ -223,29 +288,34 @@ static float verts[] = {
    1,  1,  1  // BBR // LT
 };
 
-static char front_indices[] = {
-  3, 2, // F
+static screen_coord ss_buffer[8];
+
+static char f_indices[] = {
+  0, 1, // F
   0, 2, // F
   3, 1, // F
-  0, 1  // F
+  3, 2  // F
 };
 
-static char right_indices[] = {
+static char l_indices[] = {
+  0, 1,
   0, 4,
-  1, 5,
-  4, 5
+  5, 1,
+  5, 4
 };
 
-static char left_indices[] = {
+static char r_indices[] = {
+  2, 3,
   2, 6,
-  3, 7,
-  6, 7
+  7, 3,
+  7, 6
 };
 
-static char top_indices[] = {
+static char t_indices[] = {
+  0, 2,
   0, 4,
-  2, 6,
-  4, 6
+  6, 2,
+  6, 4
 };
 
 float menu_accspeed = 1;
@@ -263,8 +333,8 @@ void menuSM() {
   
   // Draw front face of cube
   for (int i = 0; i < 4; i++) {
-    world_coord wCoord0 = collateVertData(verts, front_indices, i*2 + 0);
-    world_coord wCoord1 = collateVertData(verts, front_indices, i*2 + 1);
+    world_coord wCoord0 = collateVertData(verts, f_indices, i*2 + 0);
+    world_coord wCoord1 = collateVertData(verts, f_indices, i*2 + 1);
         
     screen_coord sCoord0 = mdlToScreen(wCoord0);
     screen_coord sCoord1 = mdlToScreen(wCoord1);
@@ -273,7 +343,7 @@ void menuSM() {
   }
 
   // Draw game thumbnail
-  display.drawBitmap(12, 8, snake_thumb, 48, 48, 1);
+  display.drawBitmap(8, 4, snake_thumb, 56, 56, 1);
   
   display.display();
   
@@ -289,161 +359,92 @@ void menuSM() {
   }
   
   if (!digitalRead(INPUT_R)) {
-    menuRFlip(menu_accspeed);
+    menuSideFlip(true, menu_accspeed);
     firstframe = true;
   }
   else if (!digitalRead(INPUT_L)) {
-    menuLFlip(menu_accspeed);
+    menuSideFlip(false, menu_accspeed);
     firstframe = true;
   }
-  else if (!digitalRead(INPUT_U)) {
-    menuUFlip();
-    // start the game
-    snake_Game();
-  } 
+  //else if (!digitalRead(INPUT_U)) {
+  //  menuUFlip();
+  //  // start the game
+  //  snake_Game();
+  //} 
   else {
     firstframe = false;
   }
 }
 
-void menuRFlip(float speed) {
+void menuSideFlip(bool dir, float speed) {
   float theta = 0;
   float t_val = 0;
-  for (int d = 0; d < int(10/speed); d++) {
-    t_val = lerp(t_val, 1, 0.3);
-    theta = lerp(0, -DEG90RAD, t_val);
+  
+  for (int d = 0; d < int(12/speed); d++) {
+    t_val = lerp(t_val, 1, 0.25);
+    //t_val = (float)(d) / floor(10.0f/speed);
+
+    if (dir)
+      theta = lerp(0, -DEG90RAD, t_val);
+    else
+      theta = lerp(0, DEG90RAD, t_val);
     
     float sinTheta = sin(theta);
     float cosTheta = cos(theta);
 
+    // compute screenspace coordinates
+    for (int i = 0; i < 8; i++) {
+      world_coord wCoord = collateVertData(verts, i);
+      world_coord wCoordT;
+
+      wCoordT.x = wCoord.x*cosTheta - wCoord.z*sinTheta;
+      wCoordT.y = wCoord.y;
+      wCoordT.z = wCoord.x*sinTheta + wCoord.z*cosTheta;
+
+      ss_buffer[i] = mdlToScreen(wCoordT);
+    }
+
     display.clearDisplay();
 
-    // Draw front face
-    for (int i = 0; i < 4; i++) {
-      world_coord wCoord0 = collateVertData(verts, front_indices, i*2 + 0);
-      world_coord wCoord1 = collateVertData(verts, front_indices, i*2 + 1);
-      world_coord wCT0;
-      world_coord wCT1;
-  
-      wCT0.x = wCoord0.x*cosTheta - wCoord0.z*sinTheta;
-      wCT0.y = wCoord0.y;
-      wCT0.z = wCoord0.x*sinTheta + wCoord0.z*cosTheta;
-  
-      wCT1.x = wCoord1.x*cosTheta - wCoord1.z*sinTheta;
-      wCT1.y = wCoord1.y;
-      wCT1.z = wCoord1.x*sinTheta + wCoord1.z*cosTheta;
-  
-      screen_coord sCoord0 = mdlToScreen(wCT0);
-      screen_coord sCoord1 = mdlToScreen(wCT1);
-
-      // cursed technique: culling
-      if (i == 1) {
-        if (sCoord0.x > sCoord1.x)
-          break;
-      }
+    if (dir) {
+      // draw thumbnails
+      unsigned char bmpXOff = ss_buffer[2].x;
+      display.drawBitmap(bmpXOff - 57, 4, snake_thumb, 56, 56, 1);
+      display.fillRect(ss_buffer[0].x - 56, 4, 56, 56, SSD1306_BLACK);
+      display.drawBitmap(bmpXOff + 1, 4, snake_thumb, 56, 56, 1);
+      display.fillRect(ss_buffer[6].x, 4, 56, 56, SSD1306_BLACK);
       
-      display.drawLine(sCoord0.x, sCoord0.y, sCoord1.x, sCoord1.y, SSD1306_WHITE);
+    }
+    else
+    {
+      // draw thumbnails
+      unsigned char bmpXOff = ss_buffer[0].x;
+      display.drawBitmap(bmpXOff - 57, 4, snake_thumb, 56, 56, 1);
+      display.fillRect(min(ss_buffer[2].x, ss_buffer[4].x) - 56, 4, 56, 56, SSD1306_BLACK);
+      display.drawBitmap(bmpXOff + 1, 4, snake_thumb, 56, 56, 1);
+      display.fillRect(ss_buffer[2].x, 4, 56, 56, SSD1306_BLACK);
+      
     }
 
-    // Draw left face
-    for (int i = 0; i < 3; i++) {
-      world_coord wCoord0 = collateVertData(verts, left_indices, i*2 + 0);
-      world_coord wCoord1 = collateVertData(verts, left_indices, i*2 + 1);
-      world_coord wCT0;
-      world_coord wCT1;
-  
-      wCT0.x = wCoord0.x*cosTheta - wCoord0.z*sinTheta;
-      wCT0.y = wCoord0.y;
-      wCT0.z = wCoord0.x*sinTheta + wCoord0.z*cosTheta;
-  
-      wCT1.x = wCoord1.x*cosTheta - wCoord1.z*sinTheta;
-      wCT1.y = wCoord1.y;
-      wCT1.z = wCoord1.x*sinTheta + wCoord1.z*cosTheta;
-  
-      screen_coord sCoord0 = mdlToScreen(wCT0);
-      screen_coord sCoord1 = mdlToScreen(wCT1);
-      
-      display.drawLine(sCoord0.x, sCoord0.y, sCoord1.x, sCoord1.y, SSD1306_WHITE);
-    }
+    // draw front face
+    // cull front face when behind right face
+    if (ss_buffer[0].x <= ss_buffer[2].x)
+      for (int i = 0; i < 4; i++)
+        display.drawLine(ss_buffer[f_indices[i*2 + 0]].x, ss_buffer[f_indices[i*2 + 0]].y, ss_buffer[f_indices[i*2 + 1]].x, ss_buffer[f_indices[i*2 + 1]].y, SSD1306_WHITE);
 
-    // Draw game thumbnails
-    int x_offset0 = lerp(12, -48, t_val);
-    display.drawBitmap(x_offset0, 8, snake_thumb, 48, 48, 1);
-    int x_offset1 = lerp(128, 12, t_val);
-    display.drawBitmap(x_offset1, 8, snake_thumb, 48, 48, 1);
-    
+    if (dir) // Draw right face
+      for (int i = 0; i < 4; i++)
+        display.drawLine(ss_buffer[r_indices[i*2 + 0]].x, ss_buffer[r_indices[i*2 + 0]].y, ss_buffer[r_indices[i*2 + 1]].x, ss_buffer[r_indices[i*2 + 1]].y, SSD1306_WHITE);
+    else     // Draw left face
+      for (int i = 0; i < 4; i++)
+        display.drawLine(ss_buffer[l_indices[i*2 + 0]].x, ss_buffer[l_indices[i*2 + 0]].y, ss_buffer[l_indices[i*2 + 1]].x, ss_buffer[l_indices[i*2 + 1]].y, SSD1306_WHITE);
+
     display.display();
-
     delay(5);
   }
 }
 
-void menuLFlip(float speed) {
-  float theta = 0;
-  float t_val = 0;
-  for (int d = 0; d < int(10/speed); d++) {
-    t_val = lerp(t_val, 1, 0.3);
-    theta = lerp(0, DEG90RAD, t_val);
-    
-    float sinTheta = sin(theta);
-    float cosTheta = cos(theta);
-
-    display.clearDisplay();
-
-    // Draw front face
-    for (int i = 0; i < 4; i++) {
-      world_coord wCoord0 = collateVertData(verts, front_indices, i*2 + 0);
-      world_coord wCoord1 = collateVertData(verts, front_indices, i*2 + 1);
-      world_coord wCT0;
-      world_coord wCT1;
-  
-      wCT0.x = wCoord0.x*cosTheta - wCoord0.z*sinTheta;
-      wCT0.y = wCoord0.y;
-      wCT0.z = wCoord0.x*sinTheta + wCoord0.z*cosTheta;
-  
-      wCT1.x = wCoord1.x*cosTheta - wCoord1.z*sinTheta;
-      wCT1.y = wCoord1.y;
-      wCT1.z = wCoord1.x*sinTheta + wCoord1.z*cosTheta;
-  
-      screen_coord sCoord0 = mdlToScreen(wCT0);
-      screen_coord sCoord1 = mdlToScreen(wCT1);
-      
-      display.drawLine(sCoord0.x, sCoord0.y, sCoord1.x, sCoord1.y, SSD1306_WHITE);
-    }
-
-    // Draw right face
-    for (int i = 0; i < 3; i++) {
-      world_coord wCoord0 = collateVertData(verts, right_indices, i*2 + 0);
-      world_coord wCoord1 = collateVertData(verts, right_indices, i*2 + 1);
-      world_coord wCT0;
-      world_coord wCT1;
-  
-      wCT0.x = wCoord0.x*cosTheta - wCoord0.z*sinTheta;
-      wCT0.y = wCoord0.y;
-      wCT0.z = wCoord0.x*sinTheta + wCoord0.z*cosTheta;
-  
-      wCT1.x = wCoord1.x*cosTheta - wCoord1.z*sinTheta;
-      wCT1.y = wCoord1.y;
-      wCT1.z = wCoord1.x*sinTheta + wCoord1.z*cosTheta;
-  
-      screen_coord sCoord0 = mdlToScreen(wCT0);
-      screen_coord sCoord1 = mdlToScreen(wCT1);
-      
-      display.drawLine(sCoord0.x, sCoord0.y, sCoord1.x, sCoord1.y, SSD1306_WHITE);
-    }
-
-    // Draw game thumbnail
-    int x_offset0 = lerp(12, 128, t_val);
-    display.drawBitmap(x_offset0, 8, snake_thumb, 48, 48, 1);
-    int x_offset1 = lerp(-48, 12, t_val);
-    display.drawBitmap(x_offset1, 8, snake_thumb, 48, 48, 1);
-
-    display.display();
-
-    delay(5);
-  }
-}
-
+/*
 void menuUFlip() {
   float theta = 0;
   float t_val = 0;
@@ -478,7 +479,7 @@ void menuUFlip() {
       screen_coord sCoord1 = mdlToScreen(wCT1);
 
       // cursed technique: culling
-      if (i == 1) {
+      if (i == 0) {
         if (sCoord0.y < sCoord1.y)
           break;
       }
@@ -487,7 +488,7 @@ void menuUFlip() {
     }
 
     // Draw top face
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 4; i++) {
       world_coord wCoord0 = collateVertData(verts, top_indices, i*2 + 0);
       world_coord wCoord1 = collateVertData(verts, top_indices, i*2 + 1);
       world_coord wCT0;
@@ -509,12 +510,13 @@ void menuUFlip() {
 
     // Draw game thumbnail
     int y_offset0 = lerp(8, 64, t_val);
-    display.drawBitmap(12, y_offset0, snake_thumb, 48, 48, 1);
+    display.drawBitmap(12, y_offset0, snake_thumb, 56, 56, 1);
 
     display.display();
 
     delay(5);
   }
+  
 
   // Cube zoom
   for (int i = 0; i < 10; i++) {
@@ -523,8 +525,8 @@ void menuUFlip() {
     display.clearDisplay();
     // Draw front face of cube
     for (int i = 0; i < 4; i++) {
-      world_coord wCoord0 = collateVertData(verts, front_indices, i*2 + 0);
-      world_coord wCoord1 = collateVertData(verts, front_indices, i*2 + 1);
+      world_coord wCoord0 = collateVertData(verts, f_indices, i*2 + 0);
+      world_coord wCoord1 = collateVertData(verts, f_indices, i*2 + 1);
           
       screen_coord sCoord0 = mdlToScreen(wCoord0);
       screen_coord sCoord1 = mdlToScreen(wCoord1);
@@ -536,6 +538,7 @@ void menuUFlip() {
     delay(5);
   }
 }
+*/
 
 // --------------- // GAMES // --------------- //
 
