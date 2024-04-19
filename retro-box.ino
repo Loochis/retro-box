@@ -1,23 +1,3 @@
-/**************************************************************************
- This is an example for our Monochrome OLEDs based on SSD1306 drivers
-
- Pick one up today in the adafruit shop!
- ------> http://www.adafruit.com/category/63_98
-
- This example is for a 128x64 pixel display using I2C to communicate
- 3 pins are required to interface (two I2C and one reset).
-
- Adafruit invests time and resources providing this open
- source code, please support Adafruit and open-source
- hardware by purchasing products from Adafruit!
-
- Written by Limor Fried/Ladyada for Adafruit Industries,
- with contributions from the open source community.
- BSD license, check license.txt for more information
- All text above, and the splash screen below must be
- included in any redistribution.
- **************************************************************************/
-
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -163,6 +143,9 @@ static const unsigned char snake_scoreboard[] = {
 
 // --- GAME LIST --- //
 
+#define GAME_COUNT 2
+int current_game = 0;
+
 static const unsigned char* game_thumbs[] = {
   snake_thumb,
   asteroids_thumb
@@ -197,7 +180,7 @@ void setup() {
   display.clearDisplay();
 
   // Override menu
-  
+  //asteroids_Game();
 }
 
 void loop() {
@@ -276,6 +259,12 @@ void draw_digit(int digit, int x_pos, int y_pos, int scale) {
 
 // --------------- MENU RELATED FUNCTIONALITY ---------------
 
+static const unsigned char* GetMenuThumb(int idx) {
+   if (idx >= GAME_COUNT) return game_thumbs[0];
+   if (idx < 0) return game_thumbs[GAME_COUNT - 1];
+   return game_thumbs[idx];
+}
+
 // Main menu cube definition
 static float verts[] = {
   -1, -1, -1, // FTL // MM
@@ -343,7 +332,7 @@ void menuSM() {
   }
 
   // Draw game thumbnail
-  display.drawBitmap(8, 4, snake_thumb, 56, 56, 1);
+  display.drawBitmap(8, 4, GetMenuThumb(current_game), 56, 56, 1);
   
   display.display();
   
@@ -360,17 +349,21 @@ void menuSM() {
   
   if (!digitalRead(INPUT_R)) {
     menuSideFlip(true, menu_accspeed);
+    current_game++;
+    if (current_game >= GAME_COUNT) current_game = 0;
     firstframe = true;
   }
   else if (!digitalRead(INPUT_L)) {
     menuSideFlip(false, menu_accspeed);
+    current_game--;
+    if (current_game < 0) current_game = GAME_COUNT - 1;
     firstframe = true;
   }
-  //else if (!digitalRead(INPUT_U)) {
-  //  menuUFlip();
-  //  // start the game
-  //  snake_Game();
-  //} 
+  else if (!digitalRead(INPUT_U)) {
+    menuUFlip();
+    // start the game
+    snake_Game();
+  } 
   else {
     firstframe = false;
   }
@@ -409,9 +402,9 @@ void menuSideFlip(bool dir, float speed) {
     if (dir) {
       // draw thumbnails
       unsigned char bmpXOff = ss_buffer[2].x;
-      display.drawBitmap(bmpXOff - 57, 4, snake_thumb, 56, 56, 1);
+      display.drawBitmap(bmpXOff - 57, 4, GetMenuThumb(current_game), 56, 56, 1);
       display.fillRect(ss_buffer[0].x - 56, 4, 56, 56, SSD1306_BLACK);
-      display.drawBitmap(bmpXOff + 1, 4, snake_thumb, 56, 56, 1);
+      display.drawBitmap(bmpXOff + 1, 4, GetMenuThumb(current_game + 1), 56, 56, 1);
       display.fillRect(ss_buffer[6].x, 4, 56, 56, SSD1306_BLACK);
       
     }
@@ -419,9 +412,9 @@ void menuSideFlip(bool dir, float speed) {
     {
       // draw thumbnails
       unsigned char bmpXOff = ss_buffer[0].x;
-      display.drawBitmap(bmpXOff - 57, 4, snake_thumb, 56, 56, 1);
+      display.drawBitmap(bmpXOff - 57, 4, GetMenuThumb(current_game - 1), 56, 56, 1);
       display.fillRect(min(ss_buffer[2].x, ss_buffer[4].x) - 56, 4, 56, 56, SSD1306_BLACK);
-      display.drawBitmap(bmpXOff + 1, 4, snake_thumb, 56, 56, 1);
+      display.drawBitmap(bmpXOff + 1, 4, GetMenuThumb(current_game), 56, 56, 1);
       display.fillRect(ss_buffer[2].x, 4, 56, 56, SSD1306_BLACK);
       
     }
@@ -444,12 +437,14 @@ void menuSideFlip(bool dir, float speed) {
   }
 }
 
-/*
+
 void menuUFlip() {
   float theta = 0;
   float t_val = 0;
-  for (int d = 0; d < 10; d++) {
-    t_val = lerp(t_val, 1, 0.3);
+  
+  for (int d = 0; d < 12; d++) {
+    
+    t_val = lerp(t_val, 1, 0.25);
     theta = lerp(0, DEG90RAD, t_val);
 
     // animate box towards center of screen
@@ -458,62 +453,37 @@ void menuUFlip() {
     float sinTheta = sin(theta);
     float cosTheta = cos(theta);
 
-    display.clearDisplay();
+    // compute screenspace coordinates
+    for (int i = 0; i < 8; i++) {
+      world_coord wCoord = collateVertData(verts, i);
+      world_coord wCoordT;
 
-    // Draw front face
-    for (int i = 0; i < 4; i++) {
-      world_coord wCoord0 = collateVertData(verts, front_indices, i*2 + 0);
-      world_coord wCoord1 = collateVertData(verts, front_indices, i*2 + 1);
-      world_coord wCT0;
-      world_coord wCT1;
-      
-      wCT0.x = wCoord0.x;
-      wCT0.y = wCoord0.y*cosTheta - wCoord0.z*sinTheta;
-      wCT0.z = wCoord0.y*sinTheta + wCoord0.z*cosTheta;
+      wCoordT.x = wCoord.x;
+      wCoordT.y = wCoord.y*cosTheta - wCoord.z*sinTheta;
+      wCoordT.z = wCoord.y*sinTheta + wCoord.z*cosTheta;
 
-      wCT1.x = wCoord1.x;
-      wCT1.y = wCoord1.y*cosTheta - wCoord1.z*sinTheta;
-      wCT1.z = wCoord1.y*sinTheta + wCoord1.z*cosTheta;
-  
-      screen_coord sCoord0 = mdlToScreen(wCT0);
-      screen_coord sCoord1 = mdlToScreen(wCT1);
-
-      // cursed technique: culling
-      if (i == 0) {
-        if (sCoord0.y < sCoord1.y)
-          break;
-      }
-      
-      display.drawLine(sCoord0.x, sCoord0.y, sCoord1.x, sCoord1.y, SSD1306_WHITE);
+      ss_buffer[i] = mdlToScreen(wCoordT);
     }
+
+    display.clearDisplay();
+    
+    // draw thumbnail
+    unsigned char bmpXOff = ss_buffer[0].x;
+    unsigned char bmpYOff = ss_buffer[0].y;
+    display.drawBitmap(bmpXOff + 1, bmpYOff + 1, GetMenuThumb(current_game), 56, 56, 1);
+    display.fillRect(bmpXOff + 1, ss_buffer[1].y, 56, 56, SSD1306_BLACK);
+
+    // draw front face
+    // cull front face when behind top face
+    if (ss_buffer[0].y <= ss_buffer[1].y)
+      for (int i = 0; i < 4; i++)
+        display.drawLine(ss_buffer[f_indices[i*2 + 0]].x, ss_buffer[f_indices[i*2 + 0]].y, ss_buffer[f_indices[i*2 + 1]].x, ss_buffer[f_indices[i*2 + 1]].y, SSD1306_WHITE);
 
     // Draw top face
-    for (int i = 0; i < 4; i++) {
-      world_coord wCoord0 = collateVertData(verts, top_indices, i*2 + 0);
-      world_coord wCoord1 = collateVertData(verts, top_indices, i*2 + 1);
-      world_coord wCT0;
-      world_coord wCT1;
-  
-      wCT0.x = wCoord0.x;
-      wCT0.y = wCoord0.y*cosTheta - wCoord0.z*sinTheta;
-      wCT0.z = wCoord0.y*sinTheta + wCoord0.z*cosTheta;
-
-      wCT1.x = wCoord1.x;
-      wCT1.y = wCoord1.y*cosTheta - wCoord1.z*sinTheta;
-      wCT1.z = wCoord1.y*sinTheta + wCoord1.z*cosTheta;
-  
-      screen_coord sCoord0 = mdlToScreen(wCT0);
-      screen_coord sCoord1 = mdlToScreen(wCT1);
+    for (int i = 0; i < 4; i++)
+      display.drawLine(ss_buffer[t_indices[i*2 + 0]].x, ss_buffer[t_indices[i*2 + 0]].y, ss_buffer[t_indices[i*2 + 1]].x, ss_buffer[t_indices[i*2 + 1]].y, SSD1306_WHITE);
       
-      display.drawLine(sCoord0.x, sCoord0.y, sCoord1.x, sCoord1.y, SSD1306_WHITE);
-    }
-
-    // Draw game thumbnail
-    int y_offset0 = lerp(8, 64, t_val);
-    display.drawBitmap(12, y_offset0, snake_thumb, 56, 56, 1);
-
     display.display();
-
     delay(5);
   }
   
@@ -538,7 +508,7 @@ void menuUFlip() {
     delay(5);
   }
 }
-*/
+
 
 // --------------- // GAMES // --------------- //
 
@@ -635,6 +605,33 @@ float particle_vel_x[PARTICLE_COUNT];
 float particle_vel_y[PARTICLE_COUNT];
 bool  particle_alive[PARTICLE_COUNT];
 
+int particle_idx = 0;
+
+void resetParticles() {
+  particle_gravity = 1;
+  particle_lifetime = 30;
+  for (int i = 0; i < PARTICLE_COUNT; i++) {
+    particle_lifectr[i] = 0;
+    particle_coords_x[i] = 0;
+    particle_coords_y[i] = 0;
+    particle_vel_x[i] = 0;
+    particle_vel_y[i] = 0;
+    particle_alive[i] = false;
+  }
+}
+
+void spawnParticle(float x, float y, float vX, float vY) {
+  particle_lifectr[particle_idx] = 0;
+  particle_coords_x[particle_idx] = x;
+  particle_coords_y[particle_idx] = y;
+  particle_vel_x[particle_idx] = vX;
+  particle_vel_y[particle_idx] = vY;
+  particle_alive[particle_idx] = true;
+
+  particle_idx++;
+  if (particle_idx >= PARTICLE_COUNT) particle_idx = 0;
+}
+
 void simulateParticles(float d_t) {
   for (int i = 0; i < PARTICLE_COUNT; i++) {
     if (!particle_alive[i]) continue;
@@ -668,7 +665,7 @@ unsigned char snake_segments_y[512]; // (32x16)
 unsigned char snake_projected_dir = 4;
 unsigned char snake_facing_dir = 4;      // U D L R
 
-int snake_game_delay = 10;
+int snake_game_delay = 4;
 int snake_game_delayctr = 0;
 
 int snake_game_diffgate = 5;
@@ -686,7 +683,7 @@ void snake_Game() {
   snake_length = 10;
   snake_projected_dir = 4;
   snake_facing_dir = 4;
-  snake_game_delay = 10;
+  snake_game_delay = 3;
   snake_game_delayctr = 0;
   snake_game_diffgate = 5;
   snake_game_diffctr = 0;
@@ -695,8 +692,7 @@ void snake_Game() {
   snake_score = 0;
 
   // setup particle vars
-  particle_gravity = 1;
-  particle_lifetime = 30; // seconds
+  resetParticles();
   
   // make the segments spawn in the abyss of space
   for (int i = 1; i < 512; i++) {
@@ -773,7 +769,7 @@ int snake_GameStep() {
       snake_game_diffctr++;
       if (snake_game_diffctr >= snake_game_diffgate) {
         snake_game_diffctr = 0;
-        snake_SpeedUp();
+        //snake_SpeedUp();
       }
       snake_length++;
       snake_score++;
@@ -839,13 +835,8 @@ void snake_DisplayGame() {
 
 void snake_ParticleBurst() {
     for (int i = 0; i < 20; i++) {
-      if (i >= PARTICLE_COUNT) return;
-      particle_alive[i] = true;
-      particle_lifectr[i] = 0;
-      particle_coords_x[i] = snake_segments_x[0]*4 + 2;
-      particle_coords_y[i] = snake_segments_y[0]*4 + 2;
-      particle_vel_x[i] = (random(-99, 99) / 100.0f)*5;
-      particle_vel_y[i] = (random(-99, 99) / 100.0f)*5;
+      spawnParticle(snake_segments_x[0]*4 + 2, snake_segments_y[0]*4 + 2,
+                    (random(-99, 99) / 100.0f)*5, (random(-99, 99) / 100.0f)*5);
     }
 }
 
@@ -911,14 +902,9 @@ void snake_GameOver() {
     }
 
     // spawn some particles
-    for (int i = 0; i < 20; i++) {
-      if (i >= PARTICLE_COUNT) return;
-      particle_alive[i] = true;
-      particle_lifectr[i] = 0;
-      particle_coords_x[i] = snake_segments_x[z]*4 + 2;
-      particle_coords_y[i] = snake_segments_y[z]*4 + 2;
-      particle_vel_x[i] = (random(-99, 99) / 100.0f)*5;
-      particle_vel_y[i] = (random(-99, 99) / 100.0f)*5;
+    for (int i = 0; i < 5; i++) {
+      spawnParticle(snake_segments_x[z]*4 + 2, snake_segments_y[z]*4 + 2,
+                    (random(-99, 99) / 100.0f)*5, (random(-99, 99) / 100.0f)*5);
     }
   }
 
@@ -978,4 +964,129 @@ void snake_GameOver() {
   display.invertDisplay(true);
   delay(1000);
   display.invertDisplay(false);
+}
+
+// ------------------ ASTEROIDS ------------------ //
+
+float asteroids_ship_vecs[] = {
+     0,  0.5,
+   0.5, -0.5,
+     0, -0.2,
+  -0.5, -0.5
+};
+
+float asteroids_ship_transf[8];
+
+float asteroids_ship_rotation = 0;
+float asteroids_ship_scale = 6;
+
+float asteroids_ship_pos_x = 64;
+float asteroids_ship_pos_y = 32;
+float asteroids_ship_vel_x = 0;
+float asteroids_ship_vel_y = 0;
+
+#define ASTEROIDS_MAX_SHOTS 10
+int   asteroids_shots_idx = 0;
+float asteroids_shots_pos_x[ASTEROIDS_MAX_SHOTS];
+float asteroids_shots_pos_y[ASTEROIDS_MAX_SHOTS];
+float asteroids_shots_vel_x[ASTEROIDS_MAX_SHOTS];
+float asteroids_shots_vel_y[ASTEROIDS_MAX_SHOTS];
+bool  asteroids_shots_alive[ASTEROIDS_MAX_SHOTS];
+
+int asteroids_shots_delayGate = 20;
+int asteroids_shots_delayCtr = 0;
+
+void asteroids_Game() {
+
+  resetParticles();
+  particle_gravity = 0;
+  particle_lifetime = 10;
+  
+  while (true) {
+    // update the shot timer
+    if (asteroids_shots_delayCtr < asteroids_shots_delayGate)
+      asteroids_shots_delayCtr++;
+
+    float sinTheta = sin(asteroids_ship_rotation);
+    float cosTheta = cos(asteroids_ship_rotation);
+    
+    if (!digitalRead(INPUT_L)) asteroids_ship_rotation -= 0.1f;
+    if (!digitalRead(INPUT_R)) asteroids_ship_rotation += 0.1f;
+    if (!digitalRead(INPUT_U)) {
+      asteroids_ship_vel_x -= sinTheta*0.05;
+      asteroids_ship_vel_y += cosTheta*0.05;
+      
+      float particleVX = (random(-99, 99) / 100.0f)*0.5 + sinTheta*2 + asteroids_ship_vel_x/2;
+      float particleVY = (random(-99, 99) / 100.0f)*0.5 - cosTheta*2 + asteroids_ship_vel_y/2;
+      spawnParticle(asteroids_ship_transf[4], asteroids_ship_transf[5],
+                   particleVX, particleVY);
+    }
+    if (!digitalRead(INPUT_D) && asteroids_shots_delayCtr == asteroids_shots_delayGate) {
+      asteroids_shots_delayCtr = 0;
+      asteroids_shots_idx++;
+      if (asteroids_shots_idx == ASTEROIDS_MAX_SHOTS) asteroids_shots_idx = 0;
+      
+      asteroids_shots_alive[asteroids_shots_idx] = true;
+      asteroids_shots_pos_x[asteroids_shots_idx] = asteroids_ship_transf[0];
+      asteroids_shots_pos_y[asteroids_shots_idx] = asteroids_ship_transf[1];
+      asteroids_shots_vel_x[asteroids_shots_idx] = -sinTheta*4;
+      asteroids_shots_vel_y[asteroids_shots_idx] = cosTheta*4;
+    }
+
+    // apply euler fysiks
+    asteroids_ship_pos_x += asteroids_ship_vel_x;
+    asteroids_ship_pos_y += asteroids_ship_vel_y;
+
+    for (int i = 0; i < ASTEROIDS_MAX_SHOTS; i++) {
+      if (!asteroids_shots_alive[i]) continue;
+      asteroids_shots_pos_x[i] += asteroids_shots_vel_x[i];
+      asteroids_shots_pos_y[i] += asteroids_shots_vel_y[i];
+      if (asteroids_shots_pos_x[i] > 127 || asteroids_shots_pos_x[i] < 0) asteroids_shots_alive[i] = false;
+      if (asteroids_shots_pos_y[i] > 63  || asteroids_shots_pos_y[i] < 0) asteroids_shots_alive[i] = false;
+    }
+
+    // apply non-euler fysiks
+    if (asteroids_ship_pos_x > 127) asteroids_ship_pos_x = 0;
+    if (asteroids_ship_pos_x < 0) asteroids_ship_pos_x = 127;
+
+    if (asteroids_ship_pos_y > 63) asteroids_ship_pos_y = 0;
+    if (asteroids_ship_pos_y < 0) asteroids_ship_pos_y = 63;
+    
+    // compute ship points
+    for (int i = 0; i < 4; i++) {
+      asteroids_ship_transf[i*2]   = cosTheta*asteroids_ship_vecs[i*2] - sinTheta*asteroids_ship_vecs[i*2+1];
+      asteroids_ship_transf[i*2+1] = sinTheta*asteroids_ship_vecs[i*2] + cosTheta*asteroids_ship_vecs[i*2+1];
+
+      asteroids_ship_transf[i*2]   *= asteroids_ship_scale;
+      asteroids_ship_transf[i*2+1] *= asteroids_ship_scale;
+
+      asteroids_ship_transf[i*2]   += asteroids_ship_pos_x;
+      asteroids_ship_transf[i*2+1] += asteroids_ship_pos_y;
+    }
+
+    // simulate particles
+    simulateParticles(0.5);
+
+    display.clearDisplay();
+
+    // display ship
+    for (int i = 0; i < 3; i++) {
+      display.drawLine(asteroids_ship_transf[i*2], asteroids_ship_transf[i*2+1], asteroids_ship_transf[i*2+2], asteroids_ship_transf[i*2+3], 1);
+    }
+    display.drawLine(asteroids_ship_transf[6], asteroids_ship_transf[7], asteroids_ship_transf[0], asteroids_ship_transf[1], 1);
+
+    // display shots
+    for (int i = 0; i < ASTEROIDS_MAX_SHOTS; i++) {
+      if (!asteroids_shots_alive[i]) continue;
+      display.drawLine(asteroids_shots_pos_x[i] - asteroids_shots_vel_x[i]/2, 
+                       asteroids_shots_pos_y[i] - asteroids_shots_vel_y[i]/2, 
+                       asteroids_shots_pos_x[i] + asteroids_shots_vel_x[i]/2, 
+                       asteroids_shots_pos_y[i] + asteroids_shots_vel_y[i]/2, 
+                       1);
+    }
+    
+    displayParticles();
+    
+    display.display();
+  }
 }
